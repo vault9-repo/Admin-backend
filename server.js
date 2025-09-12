@@ -1,8 +1,8 @@
 // server.js (ESM version)
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import dotenv from 'dotenv';
+import express from "express";
+import mongoose from "mongoose";
+import cors from "cors";
+import dotenv from "dotenv";
 
 // ===== Load Environment Variables =====
 dotenv.config();
@@ -20,8 +20,8 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log('✅ MongoDB Connected'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
+  .then(() => console.log("✅ MongoDB Connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // ===== Prediction Schema =====
 const predictionSchema = new mongoose.Schema(
@@ -35,76 +35,76 @@ const predictionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Prediction = mongoose.model('Prediction', predictionSchema);
+const Prediction = mongoose.model("Prediction", predictionSchema);
 
-// ===== Root Route (Render Test) =====
-app.get('/', (req, res) => {
-  res.send('✅ Admin backend is running on Render! Use /predictions or /admin/login');
+// ===== Root Route (Health Check) =====
+app.get("/", (req, res) => {
+  res.send("✅ Admin backend is running on Render! Use /predictions or /admin/login");
 });
 
 // ===== Admin Login =====
-app.post('/admin/login', (req, res) => {
+app.post("/admin/login", (req, res) => {
   const { password } = req.body;
 
   if (!password) {
     return res
       .status(400)
-      .json({ success: false, message: 'Password required' });
+      .json({ success: false, message: "Password required" });
   }
 
   if (password === process.env.ADMIN_PASSWORD) {
     return res.json({ success: true });
   } else {
-    return res.json({ success: false, message: 'Incorrect password' });
+    return res.json({ success: false, message: "Incorrect password" });
   }
 });
 
 // ===== CRUD Endpoints =====
 
 // Get all predictions
-app.get('/predictions', async (req, res) => {
+app.get("/predictions", async (req, res) => {
   try {
     const bets = await Prediction.find().sort({ createdAt: -1 });
     res.json(bets);
   } catch (err) {
-    console.error('❌ Error fetching predictions:', err);
-    res.status(500).json({ message: 'Server error fetching predictions' });
+    console.error("❌ Error fetching predictions:", err);
+    res.status(500).json({ message: "Server error fetching predictions" });
   }
 });
 
 // Add a new prediction
-app.post('/predictions', async (req, res) => {
+app.post("/predictions", async (req, res) => {
   try {
     const { date, time, match, prediction, odds } = req.body;
 
     if (!date || !time || !match || !prediction || !odds) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     const newBet = new Prediction({ date, time, match, prediction, odds });
     await newBet.save();
 
-    res.json({ message: 'Prediction added successfully', newBet });
+    res.json({ message: "Prediction added successfully", newBet });
   } catch (err) {
-    console.error('❌ Error adding prediction:', err);
-    res.status(500).json({ message: 'Server error adding prediction' });
+    console.error("❌ Error adding prediction:", err);
+    res.status(500).json({ message: "Server error adding prediction" });
   }
 });
 
 // Delete a prediction
-app.delete('/predictions/:id', async (req, res) => {
+app.delete("/predictions/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await Prediction.findByIdAndDelete(id);
 
     if (!deleted) {
-      return res.status(404).json({ message: 'Prediction not found' });
+      return res.status(404).json({ message: "Prediction not found" });
     }
 
-    res.json({ message: 'Prediction deleted successfully' });
+    res.json({ message: "Prediction deleted successfully" });
   } catch (err) {
-    console.error('❌ Error deleting prediction:', err);
-    res.status(500).json({ message: 'Server error deleting prediction' });
+    console.error("❌ Error deleting prediction:", err);
+    res.status(500).json({ message: "Server error deleting prediction" });
   }
 });
 
