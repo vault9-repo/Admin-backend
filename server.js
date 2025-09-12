@@ -4,25 +4,26 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-// Load env vars
+// ===== Load Environment Variables =====
 dotenv.config();
 
-// Initialize app
+// ===== Initialize Express App =====
 const app = express();
 
-// Middleware
+// ===== Middleware =====
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('✅ MongoDB Connected'))
-.catch(err => console.error('❌ MongoDB connection error:', err));
+// ===== MongoDB Connection =====
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log('✅ MongoDB Connected'))
+  .catch((err) => console.error('❌ MongoDB connection error:', err));
 
-// Schema
+// ===== Prediction Schema =====
 const predictionSchema = new mongoose.Schema(
   {
     date: { type: String, required: true },
@@ -36,7 +37,12 @@ const predictionSchema = new mongoose.Schema(
 
 const Prediction = mongoose.model('Prediction', predictionSchema);
 
-// Admin Login
+// ===== Root Route (Render Test) =====
+app.get('/', (req, res) => {
+  res.send('✅ Admin backend is running on Render! Use /predictions or /admin/login');
+});
+
+// ===== Admin Login =====
 app.post('/admin/login', (req, res) => {
   const { password } = req.body;
 
@@ -53,6 +59,8 @@ app.post('/admin/login', (req, res) => {
   }
 });
 
+// ===== CRUD Endpoints =====
+
 // Get all predictions
 app.get('/predictions', async (req, res) => {
   try {
@@ -64,7 +72,7 @@ app.get('/predictions', async (req, res) => {
   }
 });
 
-// Add new prediction
+// Add a new prediction
 app.post('/predictions', async (req, res) => {
   try {
     const { date, time, match, prediction, odds } = req.body;
@@ -83,11 +91,15 @@ app.post('/predictions', async (req, res) => {
   }
 });
 
-// Delete prediction
+// Delete a prediction
 app.delete('/predictions/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    await Prediction.findByIdAndDelete(id);
+    const deleted = await Prediction.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({ message: 'Prediction not found' });
+    }
 
     res.json({ message: 'Prediction deleted successfully' });
   } catch (err) {
@@ -96,7 +108,7 @@ app.delete('/predictions/:id', async (req, res) => {
   }
 });
 
-// Start server
+// ===== Start Server =====
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
   console.log(`🚀 Server running on http://localhost:${PORT}`)
