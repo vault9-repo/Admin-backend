@@ -1,0 +1,103 @@
+// server.js (ESM version)
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import dotenv from 'dotenv';
+
+// Load env vars
+dotenv.config();
+
+// Initialize app
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// MongoDB Connection
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('✅ MongoDB Connected'))
+.catch(err => console.error('❌ MongoDB connection error:', err));
+
+// Schema
+const predictionSchema = new mongoose.Schema(
+  {
+    date: { type: String, required: true },
+    time: { type: String, required: true },
+    match: { type: String, required: true },
+    prediction: { type: String, required: true },
+    odds: { type: String, required: true },
+  },
+  { timestamps: true }
+);
+
+const Prediction = mongoose.model('Prediction', predictionSchema);
+
+// Admin Login
+app.post('/admin/login', (req, res) => {
+  const { password } = req.body;
+
+  if (!password) {
+    return res
+      .status(400)
+      .json({ success: false, message: 'Password required' });
+  }
+
+  if (password === process.env.ADMIN_PASSWORD) {
+    return res.json({ success: true });
+  } else {
+    return res.json({ success: false, message: 'Incorrect password' });
+  }
+});
+
+// Get all predictions
+app.get('/predictions', async (req, res) => {
+  try {
+    const bets = await Prediction.find().sort({ createdAt: -1 });
+    res.json(bets);
+  } catch (err) {
+    console.error('❌ Error fetching predictions:', err);
+    res.status(500).json({ message: 'Server error fetching predictions' });
+  }
+});
+
+// Add new prediction
+app.post('/predictions', async (req, res) => {
+  try {
+    const { date, time, match, prediction, odds } = req.body;
+
+    if (!date || !time || !match || !prediction || !odds) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    const newBet = new Prediction({ date, time, match, prediction, odds });
+    await newBet.save();
+
+    res.json({ message: 'Prediction added successfully', newBet });
+  } catch (err) {
+    console.error('❌ Error adding prediction:', err);
+    res.status(500).json({ message: 'Server error adding prediction' });
+  }
+});
+
+// Delete prediction
+app.delete('/predictions/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Prediction.findByIdAndDelete(id);
+
+    res.json({ message: 'Prediction deleted successfully' });
+  } catch (err) {
+    console.error('❌ Error deleting prediction:', err);
+    res.status(500).json({ message: 'Server error deleting prediction' });
+  }
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () =>
+  console.log(`🚀 Server running on http://localhost:${PORT}`)
+);
