@@ -5,7 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 // ===== Load Environment Variables =====
-dotenv.config(); // Make sure you have a .env file with MONGO_URI
+dotenv.config(); // Make sure you have a .env file with MONGO_URI and ADMIN_PASSWORD
 
 // ===== Initialize Express App =====
 const app = express();
@@ -35,6 +35,11 @@ const Prediction = mongoose.model("Prediction", predictionSchema);
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123"; // Set in .env
 
 // ===== Routes =====
+
+// Root route (health check / default message)
+app.get("/", (req, res) => {
+  res.send("✅ Backend is running! Use /predictions or /admin/login for API routes.");
+});
 
 // Admin Login
 app.post("/admin/login", (req, res) => {
