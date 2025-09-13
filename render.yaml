@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: admin-backend
+    name: primepicks-backend
     env: node
     plan: free
     buildCommand: "npm install"

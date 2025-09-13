@@ -19,11 +19,12 @@ mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    dbName: "primepicks", // 👈 Force everything into the primepicks database
   })
-  .then(() => console.log("✅ MongoDB Connected"))
+  .then(() => console.log("✅ MongoDB Connected to primepicks database"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// ===== Prediction Schema =====
+// ===== Schemas =====
 const predictionSchema = new mongoose.Schema(
   {
     date: { type: String, required: true },
@@ -39,7 +40,7 @@ const Prediction = mongoose.model("Prediction", predictionSchema);
 
 // ===== Root Route (Health Check) =====
 app.get("/", (req, res) => {
-  res.send("✅ Admin backend is running on Render! Use /predictions or /admin/login");
+  res.send("✅ Admin backend is running on Render! Endpoints: /predictions, /admin/login");
 });
 
 // ===== Admin Login =====
