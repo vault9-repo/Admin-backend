@@ -15,6 +15,8 @@ app.use(cors());
 app.use(express.json());
 
 // ===== MongoDB Connection =====
+// Make sure you have MONGO_URI in your .env file like:
+// MONGO_URI="mongodb+srv://<username>:<password>@primepicks254.ra2oejf.mongodb.net/database-primepicks?retryWrites=true&w=majority"
 mongoose
   .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
@@ -35,11 +37,12 @@ const predictionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Prediction = mongoose.model("Prediction", predictionSchema);
+// The model automatically maps to the 'predictions' collection in your database
+const Prediction = mongoose.model("Prediction", predictionSchema, "predictions");
 
 // ===== Root Route (Health Check) =====
 app.get("/", (req, res) => {
-  res.send("✅ Admin backend is running on Render! Use /predictions or /admin/login");
+  res.send("✅ Admin backend is running! Use /predictions or /admin/login");
 });
 
 // ===== Admin Login =====
